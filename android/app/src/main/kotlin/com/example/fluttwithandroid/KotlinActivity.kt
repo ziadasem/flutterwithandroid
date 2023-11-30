@@ -19,21 +19,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.example.androidapp.ui.theme.AndroidAppTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.example.androidapp.ui.theme.AndroidAppTheme
+import io.flutter.plugin.common.MethodChannel
 
 
 class KotlinActivity : ComponentActivity() {
     private var textFieldValue = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val message = intent.getStringExtra("value")
@@ -77,7 +78,9 @@ class KotlinActivity : ComponentActivity() {
                             Button(
                                 modifier = Modifier.fillMaxWidth().weight(1f),
                                 colors = ButtonDefaults.buttonColors( containerColor = Color(0xFF3700B3)),
-                                onClick = { /*TODO*/ }) {
+                                onClick = {
+                                    navigateToFlutter(textFieldValue)
+                                }) {
                                 Text(text = "Send To Flutter")
                             }
                         }
@@ -89,7 +92,15 @@ class KotlinActivity : ComponentActivity() {
 
     private fun navigateToJava() {
         val intent = Intent(this, JavaActivity::class.java)
+        intent.putExtra("value", textFieldValue )
+        startActivity(intent)
+    }
 
+    private fun navigateToFlutter(data:String) {
+        var methodChannel: MethodChannel? =  MainActivity.createMethodChannel("com.example.app/example")
+        methodChannel?.invokeMethod("receiveData", data)
+        val intent = Intent(this, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
     }
 

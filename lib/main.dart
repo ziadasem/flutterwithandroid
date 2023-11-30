@@ -10,9 +10,9 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    
     return MaterialApp(
       title: 'Flutter with android',
       debugShowCheckedModeBanner: false,
@@ -20,15 +20,28 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home:  ExampleScreen(),
+      home: const ExampleScreen(),
     );
   }
 }
-class ExampleScreen extends StatelessWidget {
-  ExampleScreen({super.key});
-  final TextEditingController basicInputCtrl = TextEditingController();
-   static const platform = MethodChannel('com.example.app/example');
+class ExampleScreen extends StatefulWidget {
+  const ExampleScreen({super.key});
 
+  @override
+  State<ExampleScreen> createState() => _ExampleScreenState();
+}
+
+class _ExampleScreenState extends State<ExampleScreen> {
+  final TextEditingController basicInputCtrl = TextEditingController();
+  static const platform = MethodChannel('com.example.app/example');
+
+  @override
+  void initState() {
+     platform.setMethodCallHandler(_receiveFromAndroidProject); //Method Call Handler Method Name
+    super.initState();
+  }
+
+  int count = 0 ;
   @override
   Widget build(BuildContext context) {
     
@@ -62,6 +75,12 @@ class ExampleScreen extends StatelessWidget {
                 controller: basicInputCtrl,
               ),
           ),
+          // TextButton to check that no new flutter activity is created
+          TextButton(onPressed: (){ 
+            setState(() {
+              count++;
+            });
+          }, child: Text(count.toString())),
            TextButton(onPressed: ()=> navigateToAndroidRoute("java"),
              child: const Text("Pass the data to Java Class through native channel")),
             TextButton(onPressed: ()=> navigateToAndroidRoute("kotlin"),
@@ -76,15 +95,29 @@ class ExampleScreen extends StatelessWidget {
 
   void navigateToAndroidRoute(String route) async{
     try {
-      await platform.invokeMethod('sendData', 
+      String result = await platform.invokeMethod('sendData', 
         {
           "route": route,
           "data": basicInputCtrl.text
         }
       );
+      log("result is $result");
+    } catch (e) {
+      log(e.toString());
+    }
+     
+  }
+
+   Future<void> _receiveFromAndroidProject(MethodCall call) async {
+    try {
+      if (call.method == "receiveData") {
+        final String data = call.arguments;
+        setState(() {
+          basicInputCtrl.text = data ;
+        });
+      }
     } catch (e) {
       log(e.toString());
     }
   }
-
 }

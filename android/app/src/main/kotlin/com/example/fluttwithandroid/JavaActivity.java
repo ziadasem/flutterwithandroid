@@ -12,6 +12,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.fluttwithandroid.R;
 import com.google.android.material.textfield.TextInputLayout;
 
+import io.flutter.embedding.android.FlutterActivity;
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.plugin.common.MethodChannel;
+
 
 public class JavaActivity extends AppCompatActivity {
 
@@ -26,6 +30,8 @@ public class JavaActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         Intent intent =  getIntent();
         String value = intent.getStringExtra("value");
         flutterJavaNavigationButton =  findViewById(R.id.flutterJavaNavigationButton);
@@ -43,8 +49,10 @@ public class JavaActivity extends AppCompatActivity {
         startActivity(intent);
     }
     void navigateToFlutter(){
+        MethodChannel methodChannel =  MainActivity.Companion.createMethodChannel("com.example.app/example");
+        methodChannel.invokeMethod("receiveData",  textInputLayout.getEditText().getText().toString()) ;
         Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra("value", textInputLayout.getEditText().getText().toString() );
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
